@@ -1,25 +1,37 @@
-const tr = require('../../../../../src/translation');
-const helpers = require('../../../../../src/helpers');
+const tr = require(`${global.SRC_DIR}translation`);
+const helpers = require(`${global.SRC_DIR}helpers`);
 
 const getRand = helpers.getRand;
 
 class Road {
 
     constructor() {
-        this.S = 0; // Road length
-        this.V = 0; // Speed
-        this.T = 0; // Time
+        // Road length
+        this.S = 0;
+
+        // Speed
+        this.V = 0;
+
+        // Time
+        this.T = 0;
 
         // Set up problem types
         this.types = [
-            'find_v',
-            'find_s',
-            'find_t',
+            'findV',
+            'findS',
+            'findT',
         ];
-        this.type;
+        this.type = this.types[0];
 
         // Default language
         this.language = 'en';
+
+        // Rules
+        this.rules = [
+            function(req) {
+                return this.validateJwt(req.headers.jwt); // eslint-disable-line
+            },
+        ];
     }
 
     setLanguage(language) {
@@ -68,4 +80,4 @@ class Road {
     }
 }
 
-module.exports = new Road;
+module.exports = new Road();

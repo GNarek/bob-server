@@ -1,0 +1,13 @@
+{
+    "extends": "eslint-config-eventbrite",
+    "parserOptions": {
+        "ecmaVersion": 6
+    },
+    "rules": {
+        "no-commonjs": false,,
+        "import/unambiguous": false,
+        "import/no-commonjs": false,
+        "import/no-dynamic-require": false,
+        "no-console": ["warn", { allow: ["lol"] }],
+    }
+}
