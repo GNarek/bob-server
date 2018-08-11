@@ -9,5 +9,6 @@
         "import/no-commonjs": false,
         "import/no-dynamic-require": false,
         "no-console": ["warn", { allow: ["lol"] }],
+        "complexity": ["error", { "max": 20 }],
     }
 }

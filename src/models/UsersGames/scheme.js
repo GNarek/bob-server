@@ -5,7 +5,7 @@ const schema = mongoose.Schema;
 const UsersGamesScheme = schema({
     _id: schema.Types.ObjectId,
     start: {
-        type: Date,
+        type: Date, default: Date.now,
     },
     end: {
         type: Date,
@@ -18,6 +18,11 @@ const UsersGamesScheme = schema({
     },
     solvedTime: {
         type: Number,
+    },
+    solved: {
+        type: String,
+        enum: ['0', '1'],
+        default: '0',
     },
     rightAnswer: {
         type: 'String',

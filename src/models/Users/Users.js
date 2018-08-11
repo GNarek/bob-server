@@ -32,6 +32,18 @@ class Users extends MainModel {
         };
     }
 
+    async findById(id, cb, cbError = () => {/**/}) {
+        const record = await this.Model.findById(id)
+            .populate('usersGames')
+            .then(cb)
+            .catch((error) => {
+                cbError(error);
+                console.lol('red', `DB error: [${this.tableName}][findOne]`, error);
+            });
+
+        return record;
+    }
+
 }
 
 module.exports = new Users();

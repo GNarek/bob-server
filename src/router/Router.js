@@ -1,7 +1,6 @@
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
 
-const config = require('../config/main');
+const auth = require('../modules/Auth');
 
 const acceptedLanguages = ['en', 'ru', 'hy'];
 
@@ -17,7 +16,7 @@ class Router {
         // Allow Cross-Origin Requests.
         app.use((req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
-            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+            res.header('Access-Control-Allow-Headers', '*');
             next();
         });
 
@@ -28,21 +27,17 @@ class Router {
         this.initGetRequests();
     }
 
-    validateJwt(jwtToken) {
+    async validateJwt(jwtToken) {
 
-        let result;
+        const user = await auth.findUserByJwt(jwtToken);
 
-        try {
-            result = jwt.verify(jwtToken, config.JWT.secret);
-        } catch(err) {
-            result = false;
+        // console.log('user [3]', user);
+
+        if(user !== null && typeof user === 'object') {
+            return true;
         }
 
-        if(!result) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     redirect(url) {
@@ -50,18 +45,27 @@ class Router {
         this.res.end();
     }
 
-    validateController(Controller) {
+    async validateController(Controller) {
 
         if(Array.isArray(Controller.rules)) {
-            const isValid = Controller.rules.every((rule) => {
-                if(typeof rule === 'function') {
-                    const validation = rule.bind(this);
 
-                    return validation(this.req);
+            const results = [];
+
+            for(const rule of Controller.rules) {
+                const validation = rule.bind(this);
+
+                const validationResult = await validation(this.req); // eslint-disable-line
+
+                if(validationResult) {
+                    results.push(true);
                 }
 
-                return false;
-            });
+                if(!validationResult) {
+                    results.push(true);
+                }
+            }
+
+            const isValid = results.every((result) => result);
 
             return isValid;
         }
@@ -71,7 +75,7 @@ class Router {
 
     initGetRequests() {
         // Get all requests.
-        this.app.get('*', (req, res, next) => {
+        this.app.get('*', async(req, res, next) => {
 
             // Set req and res
             this.req = req;
@@ -119,21 +123,46 @@ class Router {
                 // If the index.js is allowed controller with actionRun method/action.
                 if(Controller !== null && typeof Controller === 'object' && typeof Controller.actionRun === 'function') {
 
-                    if(!this.validateController(Controller)) {
+                    const isControllerValid = await this.validateController(Controller);
+
+                    if(!isControllerValid) {
                         this.redirect('login');
                         return next();
                     }
 
+                    if(isControllerValid === true) {
 
-                    if(typeof Controller.setLanguage === 'function') {
-                        Controller.setLanguage(parsedUrl.language);
+                        if(typeof Controller.setLanguage === 'function') {
+                            Controller.setLanguage(parsedUrl.language);
+                        }
+
+                        const result = await Controller.actionRun();
+
+                        if(result && result.length) {
+
+                            data = {
+                                status: 'success',
+                                error: null,
+                                data: result,
+                            };
+
+                            res.send(JSON.stringify(data));
+                            res.end();
+                            return next();
+                        }
+
+                        if(!result) {
+                            data = {
+                                status: 'success',
+                                error: null,
+                                data: null,
+                            };
+
+                            res.send(JSON.stringify(data));
+                            res.end();
+                            return next();
+                        }
                     }
-
-                    data = {
-                        status: 'success',
-                        error: null,
-                        data: Controller.actionRun(),
-                    };
 
                 } else {
 

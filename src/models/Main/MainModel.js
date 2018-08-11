@@ -8,19 +8,32 @@ class MainModel {
         this.Model = DB.model(this.schemeName, this.scheme);
     }
 
-    find(attributes = {}, cb, cbError = () => {/**/}) {
-        this.Model.find(attributes)
+    async find(attributes = {}, cb, cbError = () => {/**/}) {
+        const record = await this.Model.find(attributes)
             .populate('user')
             .then(cb)
             .catch((error) => {
                 cbError(error);
                 console.lol('red', `DB error: [${this.schemeName}][find]`, error);
             });
+
+        return record;
     }
 
     async findOne(attributes = {}, cb, cbError = () => {/**/}) {
         const record = await this.Model.findOne(attributes)
-            .populate('usersGames')
+            .populate('UsersGames')
+            .then(cb)
+            .catch((error) => {
+                cbError(error);
+                console.lol('red', `DB error: [${this.schemeName}][findOne]`, error);
+            });
+
+        return record;
+    }
+
+    async findById(id, cb, cbError = () => {/**/}) {
+        const record = await this.Model.findById(id)
             .then(cb)
             .catch((error) => {
                 cbError(error);
