@@ -27,3 +27,6 @@ app.listen(config.SERVER_PORT, hostname, () => {
     console.lol('cyan', `Server running at http://${hostname}:${config.SERVER_PORT}/`);
 });
 //https://www.aplusclick.org/grade8.htm
+//https://www.aplusclick.org/t.htm?level=8;q=1428
+//https://www.aplusclick.org/t.htm?level=8;q=2941
+//https://www.aplusclick.org/t.htm?level=5
